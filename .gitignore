@@ -1,34 +1,8 @@
-**/config/keycloak.json
-**/config/keycloak-saml.xml
-**/WEB-INF/keycloak.json
-*.orig
-
-# Intellij
-###################
-.idea
-*.iml
-
 # Eclipse #
 ###########
 .project
 .settings
 .classpath
-
-# NetBeans #
-############
-nbactions.xml
-nb-configuration.xml
-catalog.xml
-nbproject
-
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
 
 # Packages #
 ############
@@ -50,9 +24,3 @@ nbproject
 # Maven #
 #########
 target
-
-
-# Node.js #
-###########
-node_modules
-/app-angular2/src/main/webapp/node

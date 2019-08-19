@@ -1,1 +1,0 @@
-# stock-esb-poc
