@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XML>
+	<Header>
+		<TxID>FCB91103G_1</TxID>
+		<SystemKey>FCB66</SystemKey>
+		<TxSeqNo>20081017103403</TxSeqNo>
+		<MsgSeqNo>56202</MsgSeqNo>
+		<CltTimeStamp>2008-10-17 10:34:030963</CltTimeStamp>
+		<CustID>00000000</CustID>
+		<UserID>0000</UserID>
+		<AcctNo>00000000000</AcctNo>
+		<SvrTimeStamp>2008-10-17 10:34:11.123</SvrTimeStamp>
+		<MsgDirection>RS</MsgDirection>
+		<System>FCB91</System>
+		<StatusCode>T100</StatusCode>
+		<StatusDesc>Success</StatusDesc>
+	</Header>
+	<TxRs>
+		<AcctNo>31150280000</AcctNo>
+		<TxDate>0971017</TxDate>
+		<TxTime>103415</TxTime>
+		<PBBalSign>+</PBBalSign>
+		<PBBalAmt>252638.00</PBBalAmt>
+		<UnusedBal>0.00</UnusedBal>
+	</TxRs>
+</XML>

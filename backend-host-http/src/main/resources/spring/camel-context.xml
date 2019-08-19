@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <restConfiguration bindingMode="auto" component="servlet"
+            host="0.0.0.0" port="8080"/>
+        <rest apiDocs="true" enableCORS="true" id="backend-host-http">
+            <get id="FCB91148Y_T" uri="/FCB91148Y_T">
+                <to uri="direct:FCB91148Y_T"/>
+            </get>
+            <get id="/FCB91178Y" uri="/FCB91178Y">
+                <to uri="direct:FCB91178Y"/>
+            </get>
+            <get id="FCB91103G" uri="/FCB91103G">
+                <to uri="direct:FCB91103G"/>
+            </get>
+            <get id="FCB91348Y" uri="/FCB91348Y">
+                <to uri="direct:FCB91348Y"/>
+            </get>
+            <get id="FCB91148Y" uri="/FCB91148Y">
+                <to uri="direct:FCB91148Y"/>
+            </get>
+            <get id="/FCB91178Y_T" uri="/FCB91178Y_T">
+                <to uri="direct:FCB91178Y_T"/>
+            </get>
+        </rest>
+        <route id="FCB91148Y_T-route">
+            <from id="_from1" uri="direct:FCB91148Y_T"/>
+            <log id="_log1" message="FCB91148Y_T Input: ${body}"/>
+            <pollEnrich id="_enrich1">
+                <simple>file:mock-data?fileName=FCB91148Y_T_RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log1" message="FCB91148Y_T Output: ${body}"/>
+        </route>
+        <route id="FCB91178Y-route">
+            <from id="_from2" uri="direct:FCB91178Y"/>
+            <log id="_log2" message="FCB91178Y Input: ${body}"/>
+            <pollEnrich id="_pollEnrich1">
+                <simple>file:mock-data?fileName=FCB91178Y_RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log3" message="FCB91178Y Output: ${body}"/>
+        </route>
+        <route id="FCB91103G-route">
+            <from id="_from3" uri="direct:FCB91103G"/>
+            <log id="_log4" message="FCB91103G Input: ${body}"/>
+            <pollEnrich id="_pollEnrich2">
+                <simple>file:mock-data?fileName=FCB91103G_1.RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log5" message="FCB91103G Output: ${body}"/>
+        </route>
+        <route id="FCB91348Y-route">
+            <from id="_from4" uri="direct:FCB91348Y"/>
+            <log id="_log6" message="FCB91348Y Input: ${body}"/>
+            <pollEnrich id="_pollEnrich3">
+                <simple>file:mock-data?fileName=FCB91348Y_RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log7" message="FCB91348Y Output: ${body}"/>
+        </route>
+        <route id="FCB91148Y-route">
+            <from id="_from5" uri="direct:FCB91148Y"/>
+            <log id="_log8" message="FCB91148Y Input: ${body}"/>
+            <pollEnrich id="_pollEnrich4">
+                <simple>file:mock-data?fileName=FCB91148Y_RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log9" message="FCB91148Y Output: ${body}"/>
+        </route>
+        <route id="FCB91178Y_T-route">
+            <from id="_from6" uri="direct:FCB91178Y_T"/>
+            <log id="_log10" message="FCB91178Y_T Input: ${body}"/>
+            <pollEnrich id="_pollEnrich5">
+                <simple>file:mock-data?fileName=FCB91178Y_T_RS.xml&amp;noop=true&amp;idempotent=false</simple>
+            </pollEnrich>
+            <log id="_log11" message="FCB91178Y_T Output: ${body}"/>
+        </route>
+    </camelContext>
+</beans>

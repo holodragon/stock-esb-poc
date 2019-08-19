@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><XML>
+<Header>
+<TxID>FCB91178Y_T</TxID>
+<SystemKey>FCB11</SystemKey>
+<TxSeqNo>20100618386915</TxSeqNo>
+<MsgSeqNo>0</MsgSeqNo>
+<CltTimeStamp>2010-06-18 13:35:50.819</CltTimeStamp>
+<CustID>00000685830</CustID>
+<UserID>
+</UserID>
+<AcctNo>24110071652</AcctNo>
+<SvrTimeStamp>2010-06-18 14:44:39.968</SvrTimeStamp>
+<MsgDirection>RS</MsgDirection>
+<System>FCB91</System>
+<StatusCode>T18B</StatusCode>
+<StatusDesc>Success</StatusDesc>
+</Header>
+<TxRs>
+<RecTimes1>1</RecTimes1>
+<BusType1>T</BusType1>
+<WsID1>H3</WsID1>
+<HostSeqNo1>20001</HostSeqNo1>
+<TxID1>178Y</TxID1>
+<TransAcc1>17210000000</TransAcc1>
+<Memo1>0004609111  </Memo1>
+<Amt1>***********500.00</Amt1>
+<Blank1>     </Blank1>
+<PmtTpye1>10</PmtTpye1>
+<AgrAcct1>00000000000</AgrAcct1>
+<CustName1>¤T¤저¡@</CustName1>
+<StockName1>          </StockName1>
+<Phone1>999                 </Phone1>
+<T100MsgCode2>T100</T100MsgCode2>
+<T100RecTimes2>1</T100RecTimes2>
+<BusType2>T</BusType2>
+<WsID2>H3</WsID2>
+<HostSeqNo2>20001</HostSeqNo2>
+<TxID2>178Y</TxID2>
+</TxRs>
+</XML>
