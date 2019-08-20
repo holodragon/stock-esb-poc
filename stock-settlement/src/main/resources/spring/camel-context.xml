@@ -1,22 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean class="com.redhat.poc.bean.FCB91178YAggregationStrategy"
+        id="FCB91178YAggregationStrategy" scope="singleton"/>
+    <bean class="com.redhat.poc.bean.FormatBean" id="formatBean" scope="singleton"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
         <route id="stock-settlement-route">
-            <from id="_to1" uri="file:input"/>
+            <from id="_from1" uri="file:input"/>
             <log id="_log1" message="BODY: ${body}"/>
-            <to id="_to2" uri="txfrmr:com.redhat.firstbank.poc/MapREQ"/>
-            <setHeader headerName="STOCKCOMCODE" id="_setHeader1">
-                <jsonpath>$.REQ.Header.STOCKCOMCODE</jsonpath>
+            <to id="_to1" uri="txfrmr:com.redhat.firstbank.poc/MapREQ"/>
+            <setProperty id="_setProperty1" propertyName="TX_INPUT_JSON">
+                <simple>${body}</simple>
+            </setProperty>
+            <!-- 分公司劃撥專戶帳號 -->
+            <setHeader headerName="SUBSTOCKCOMACCT" id="_setHeader2">
+                <jsonpath>$.REQ.Header.SUBSTOCKCOMACCT</jsonpath>
             </setHeader>
             <log id="_log2" message="BODY: ${body}"/>
             <log id="_log3" message="header.STOCKCOMCODE: ${in.header.STOCKCOMCODE}"/>
             <split id="_split1">
-                <jsonpath>$.REQ.Body</jsonpath>
-                <log id="_log5" message="MSG Header.STOCKCOMCODE: ${in.header.STOCKCOMCODE}"/>
-                <log id="_log4" message="MSG: ${body}"/>
-                <!-- <to id="_to3" uri="file:output?fileName=Payload-${property.CamelSplitIndex}-${date:now:YYYY-MM-dd'T'HH:mm:ss:SSS}"/> -->
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1497")]</jsonpath>
+                <to id="_to2" uri="direct:FCB91148Y_T"/>
             </split>
+            <setBody id="_setBody1">
+                <simple>${property.TX_INPUT_JSON}</simple>
+            </setBody>
+            <log id="_log11" message="BODY: ${body}"/>
+            <split id="_split2" strategyRef="FCB91178YAggregationStrategy">
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1797")]</jsonpath>
+                <to id="_to4" uri="direct:FCB91178Y"/>
+            </split>
+            <log message="RESULT: ${body}"/>
+            <log id="_log4" message="Property FCB91178Y_AMT: ${property.FCB91178Y_AMT}"/>
+            <!-- <log id="_log4" message="INPUT BODY: ${property.TX_INPUT_JSON}"/> -->
+        </route>
+        <route id="call-FCB91148Y_T-route">
+            <from id="_from2" uri="direct:FCB91148Y_T"/>
+            <log id="_log5" message="扣： ${body}"/>
+            <setHeader headerName="ACCTNO" id="_setHeader3">
+                <jsonpath>$.ACCTNO</jsonpath>
+            </setHeader>
+            <setHeader headerName="CUSTID" id="_setHeader4">
+                <jsonpath>$.CUSTID</jsonpath>
+            </setHeader>
+            <setHeader headerName="TXSEQNO" id="_setHeader5">
+                <jsonpath>$.TXSEQNO</jsonpath>
+            </setHeader>
+            <setHeader headerName="TXSUBSEQ" id="_setHeader6">
+                <jsonpath>$.TXSUBSEQ</jsonpath>
+            </setHeader>
+            <setHeader headerName="AMT" id="_setHeader7">
+                <jsonpath>$.AMT</jsonpath>
+            </setHeader>
+            <!-- <setHeader headerName="AMT" id="_setHeader1">
+                <method method="stringToFloatString(${header.AMT})" ref="formatBean"/>
+            </setHeader> -->
+            <to id="_to3" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
+            <log id="_log6" message="REQUEST: ${body}"/>
+            <to id="_to5" uri="http4://localhost:8080/FCB91148Y_T"/>
+            <log id="_log7" message="RESPONSE: ${body}"/>
+        </route>
+        <route id="call-FCB91178Y-route">
+            <from id="_from3" uri="direct:FCB91178Y"/>
+            <log id="_log8" message="存： ${body}"/>
+            <setBody>
+                <jsonpath>$.AMT</jsonpath>
+            </setBody>
+            <log message="FCB91178Y_AMT Body: ${body}"/>
+            <!-- <setHeader headerName="AMT" id="_setHeader9">
+                <method method="stringToFloat(${header.AMT})" ref="formatBean"/>
+            </setHeader>
+             -->
+             <!-- <setProperty id="_setProperty3" propertyName="FCB91178Y_AMT">
+                <ognl>properties['FCB91178Y_AMT'] + request.headers.AMT</ognl>
+            </setProperty> -->
+            <!-- <log id="_log9" message="FCB91178Y_AMT: ${property.FCB91178Y_AMT}"/> -->
         </route>
     </camelContext>
 </beans>
