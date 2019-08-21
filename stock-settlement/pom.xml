@@ -10,8 +10,8 @@
 	<name>Stock Settlement Service</name>
 	<description>Stock Settlement Service Project</description>
 	<properties>
-		<fuse.version>7.3.1.fuse-731003-redhat-00003</fuse.version>
 		<maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
+		<fuse.version>7.3.1.fuse-731003-redhat-00003</fuse.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
 	</properties>
@@ -69,6 +69,15 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-ognl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-xmljson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xom</groupId>
+			<artifactId>xom</artifactId>
+			<version>1.2.5</version>
 		</dependency>
 	</dependencies>
 	<repositories>

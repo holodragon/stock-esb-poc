@@ -5,6 +5,12 @@
         id="FCB91178YAggregationStrategy" scope="singleton"/>
     <bean class="com.redhat.poc.bean.FormatBean" id="formatBean" scope="singleton"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <dataFormats>
+            <xmljson contentTypeHeader="false"
+                forceTopLevelObject="false" id="xml2json"
+                namespaceLenient="false" removeNamespacePrefixes="false"
+                skipNamespaces="false" skipWhitespace="false" trimSpaces="false"/>
+        </dataFormats>
         <route id="證券交割檔處理">
             <from id="讀取交割匯入檔" uri="file:input"/>
             <log id="_log1" message="BODY: ${body}"/>
@@ -31,6 +37,9 @@
             <log id="_log3" message="RESULT: ${body}"/>
             <to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
             <log id="_log4" message="REQUEST: ${body}"/>
+            <setProperty id="暫存" propertyName="SUBSTOCKCOMACCT">
+                <jsonpath>$.REQ.Header.SUBSTOCKCOMACCT</jsonpath>
+            </setProperty>
             <to id="呼叫FCB91178Y服務" uri="http4://localhost:8080/FCB91178Y"/>
             <to id="確認餘額與調撥" uri="direct:check-deposit"/>
         </route>
@@ -69,7 +78,14 @@
         <route id="CheckDeposit-route">
             <from id="_from4" uri="direct:check-deposit"/>
             <to id="呼叫FCB91103G_1服務" uri="http4://localhost:8080/FCB91103G"/>
+            <convertBodyTo id="HTTP回應純文字化" type="java.lang.String"/>
             <log id="_log8" message="FCB91103G Response： ${body}"/>
+            <marshal id="XML to JSON" ref="xml2json"/>
+            <log id="_log8" message="FCB91103G Response： ${body}"/>
+            <setHeader headerName="balanceAmt" id="取得餘額">
+                <jsonpath>$.TxRs.PBBalAmt</jsonpath>
+            </setHeader>
+            <log id="_log9" message="balanceAmt： ${header.balanceAmt}"/>
         </route>
     </camelContext>
 </beans>
