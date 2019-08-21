@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <bean class="com.redhat.poc.bean.FCB91178YAggregationStrategy"
-        id="FCB91178YAggregationStrategy" scope="singleton"/>
+    <bean class="com.redhat.poc.bean.SumAggregationStrategy"
+        id="SumAggregationStrategy" scope="singleton"/>
     <bean class="com.redhat.poc.bean.FormatBean" id="formatBean" scope="singleton"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
         <dataFormats>
@@ -22,70 +22,153 @@
             <setProperty id="取得分公司劃撥專戶帳號" propertyName="SUBSTOCKCOMACCT">
                 <jsonpath>$.REQ.Header.SUBSTOCKCOMACCT</jsonpath>
             </setProperty>
-            <split id="平行處理投資人扣款">
-                <jsonpath>$.REQ.Body[?(@.TRANSID =="1497")]</jsonpath>
-                <to id="投資人扣款-子程序" uri="direct:FCB91148Y_T"/>
-            </split>
-            <setBody id="取得原始輸入">
+            <to id="執行 1.1.多扣投資人" uri="direct:Usecase1.1"/>
+            <setBody id="1.2.取得原始輸入">
                 <simple>${property.TX_INPUT_JSON}</simple>
             </setBody>
-            <log id="_log2" message="BODY: ${body}"/>
-            <split id="匯總券商存入" strategyRef="FCB91178YAggregationStrategy">
-                <jsonpath>$.REQ.Body[?(@.TRANSID =="1797")]</jsonpath>
-                <to id="一入券商-子程序" uri="direct:FCB91178Y"/>
+            <to id="執行 1.2.一入券商作業" uri="direct:Usecase1.2"/>
+            <setBody id="2.1.取得原始輸入">
+                <simple>${property.TX_INPUT_JSON}</simple>
+            </setBody>
+            <to id="執行 2.1.券商待轉出加總作業" uri="direct:Usecase2.1"/>
+            <setProperty id="取得券商待轉出金額" propertyName="SUBAMT">
+                <simple>${body}</simple>
+            </setProperty>
+            <setBody id="2.2.取得原始輸入">
+                <simple>${property.TX_INPUT_JSON}</simple>
+            </setBody>
+            <to id="執行 2.2.券商餘額作業" uri="direct:Usecase2.2"/>
+            <setBody id="3.1.取得一扣金額">
+                <simple>${property.SUBAMT}</simple>
+            </setBody>
+            <to id="執行 3.1.一扣券商" uri="direct:Usecase3.1"/>
+            <setBody id="3.2.取得原始輸入">
+                <simple>${property.TX_INPUT_JSON}</simple>
+            </setBody>
+            <to id="執行 3.2.多入投資人" uri="direct:Usecase3.2"/>
+            <!-- <setBody id="2.2.取得原始輸入"> <simple>${property.TX_INPUT_JSON}</simple> 
+				</setBody> <to id="確認餘額與調撥" uri="direct:check-deposit" /> -->
+        </route>
+        <route id="1.1.多扣投資人作業">
+            <from id="多扣投資人作業" uri="direct:Usecase1.1"/>
+            <split id="平行處理投資人扣款">
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1497")]</jsonpath>
+                <!-- <to id="投資人扣款-子程序" uri="direct:FCB91148Y_T" /> -->
+                <log id="_log5" message="扣： ${body}"/>
+                <setHeader headerName="ACCTNO" id="_setHeader3">
+                    <jsonpath>$.ACCTNO</jsonpath>
+                </setHeader>
+                <setHeader headerName="CUSTID" id="_setHeader4">
+                    <jsonpath>$.CUSTID</jsonpath>
+                </setHeader>
+                <setHeader headerName="TXSEQNO" id="_setHeader5">
+                    <jsonpath>$.TXSEQNO</jsonpath>
+                </setHeader>
+                <setHeader headerName="TXSUBSEQ" id="_setHeader6">
+                    <jsonpath>$.TXSUBSEQ</jsonpath>
+                </setHeader>
+                <setHeader headerName="AMT" id="_setHeader7">
+                    <jsonpath>$.AMT</jsonpath>
+                </setHeader>
+                <to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
+                <!-- <log id="_log6" message="REQUEST: ${body}"/> -->
+                <to id="_to5" uri="http4://localhost:8080/FCB91148Y_T"/>
+                <!-- <log id="_log7" message="RESPONSE: ${body}"/> -->
+            </split>
+        </route>
+        <route id="1.2.一入券商作業">
+            <from id="一入券商作業" uri="direct:Usecase1.2"/>
+            <split id="匯總券商存入" strategyRef="SumAggregationStrategy">
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1497")]</jsonpath>
+                <to id="取得1497金額" uri="direct:getAmount"/>
             </split>
             <log id="_log3" message="RESULT: ${body}"/>
             <to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
-            <log id="_log4" message="REQUEST: ${body}"/>
-            <setProperty id="暫存" propertyName="SUBSTOCKCOMACCT">
-                <jsonpath>$.REQ.Header.SUBSTOCKCOMACCT</jsonpath>
-            </setProperty>
+            <!-- <log id="_log4" message="REQUEST: ${body}"/> -->
             <to id="呼叫FCB91178Y服務" uri="http4://localhost:8080/FCB91178Y"/>
-            <to id="確認餘額與調撥" uri="direct:check-deposit"/>
         </route>
-        <route id="call-FCB91148Y_T-route">
-            <from id="_from2" uri="direct:FCB91148Y_T"/>
-            <log id="_log5" message="扣： ${body}"/>
-            <setHeader headerName="ACCTNO" id="_setHeader3">
-                <jsonpath>$.ACCTNO</jsonpath>
-            </setHeader>
-            <setHeader headerName="CUSTID" id="_setHeader4">
-                <jsonpath>$.CUSTID</jsonpath>
-            </setHeader>
-            <setHeader headerName="TXSEQNO" id="_setHeader5">
-                <jsonpath>$.TXSEQNO</jsonpath>
-            </setHeader>
-            <setHeader headerName="TXSUBSEQ" id="_setHeader6">
-                <jsonpath>$.TXSUBSEQ</jsonpath>
-            </setHeader>
-            <setHeader headerName="AMT" id="_setHeader7">
-                <jsonpath>$.AMT</jsonpath>
-            </setHeader>
-            <!-- <setHeader headerName="AMT" id="_setHeader1"> <method method="stringToFloatString(${header.AMT})" 
-				ref="formatBean"/> </setHeader> -->
-            <to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
-            <log id="_log6" message="REQUEST: ${body}"/>
-            <to id="_to5" uri="http4://localhost:8080/FCB91148Y_T"/>
-            <log id="_log7" message="RESPONSE: ${body}"/>
+        <route id="2.1.券商待轉出加總作業">
+            <from id="券商待轉出加總作業" uri="direct:Usecase2.1"/>
+            <split id="匯總券商轉出" strategyRef="SumAggregationStrategy">
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1797")]</jsonpath>
+                <to id="取得1797金額" uri="direct:getAmount"/>
+            </split>
+            <log id="_log10" message="Amount to transfer out: ${body}"/>
         </route>
-        <route id="call-FCB91178Y-route">
-            <from id="_from3" uri="direct:FCB91178Y"/>
+        <route id="2.2.券商餘額調撥作業">
+            <from id="券商餘額作業" uri="direct:Usecase2.2"/>
+            <to id="呼叫FCB91103G_1服務" uri="http4://localhost:8080/FCB91103G"/>
+            <convertBodyTo id="HTTP回應純文字化" type="java.lang.String"/>
+            <!-- <log id="_log8" message="FCB91103G Response： ${body}"/> -->
+            <marshal id="XML to JSON" ref="xml2json"/>
+            <!-- <log id="_log8" message="FCB91103G Response： ${body}"/> -->
+            <setBody id="取得餘額">
+                <jsonpath>$.TxRs.PBBalAmt</jsonpath>
+            </setBody>
+            <setBody id="轉型餘額">
+                <simple>${bodyAs(Float)}</simple>
+            </setBody>
+            <setHeader headerName="amtDifference" id="計算差額">
+                <groovy>exchange.properties.SUBAMT - in.body</groovy>
+            </setHeader>
+            <log id="_log9" message="(投資人 - 券商) balanceAmt： ${header.amtDifference}"/>
+            <!-- <setHeader headerName="amtDifference"> <constant>20.0</constant> 
+				</setHeader> -->
+            <choice id="判斷餘額是否足夠">
+                <when id="_when1">
+                    <simple>${header.amtDifference} &gt;= 0</simple>
+                    <log id="_log12" message="沒錢了！"/>
+                    <to id="FCB91348Y_RQ產生" uri="freemarker:ftl/FCB91348Y_RQ.ftl"/>
+                    <log id="_log13" message="REQUEST Body: ${body}"/>
+                    <to id="呼叫FCB91348Y服務" uri="http4://localhost:8080/FCB91348Y"/>
+                    <log id="_log14" message="RESPONSE Body: ${body}"/>
+                </when>
+                <otherwise id="_otherwise1">
+                    <log id="_log15" message="餘額充足！"/>
+                </otherwise>
+            </choice>
+        </route>
+        <route id="3.1.一扣券商">
+            <from id="一扣券商" uri="direct:Usecase3.1"/>
+            <log id="_log4" message="3.1.一扣券商"/>
+            <log id="_log6" message="RESULT: ${body}"/>
+            <to id="FCB91148Y_RQ產生" uri="freemarker:ftl/FCB91148Y_RQ.ftl"/>
+            <!-- <log id="_log4" message="REQUEST: ${body}"/> -->
+            <to id="呼叫FCB91148Y服務" uri="http4://localhost:8080/FCB91148Y"/>
+        </route>
+        <route id="3.2.多入投資人">
+            <from id="多入投資人" uri="direct:Usecase3.2"/>
+            <log id="_log7" message="3.2.多入投資人"/>
+            <split id="平行處理投資人入款">
+                <jsonpath>$.REQ.Body[?(@.TRANSID =="1797")]</jsonpath>
+                <log id="_log8" message="入： ${body}"/>
+                <setHeader headerName="ACCTNO" id="_setHeader1">
+                    <jsonpath>$.ACCTNO</jsonpath>
+                </setHeader>
+                <setHeader headerName="CUSTID" id="_setHeader2">
+                    <jsonpath>$.CUSTID</jsonpath>
+                </setHeader>
+                <setHeader headerName="TXSEQNO" id="_setHeader8">
+                    <jsonpath>$.TXSEQNO</jsonpath>
+                </setHeader>
+                <setHeader headerName="TXSUBSEQ" id="_setHeader9">
+                    <jsonpath>$.TXSUBSEQ</jsonpath>
+                </setHeader>
+                <setHeader headerName="AMT" id="_setHeader10">
+                    <jsonpath>$.AMT</jsonpath>
+                </setHeader>
+                <to id="FCB91178Y_T_RQ產生" uri="freemarker:ftl/FCB91178Y_T_RQ.ftl"/>
+                <log id="_log11" message="REQUEST: ${body}"/>
+                <to id="_to1" uri="http4://localhost:8080/FCB91178Y_T"/>
+                <log id="_log16" message="RESPONSE: ${body}"/>
+            </split>
+        </route>
+        <route id="取得金額">
+            <from id="_from1" uri="direct:getAmount"/>
             <setBody id="_setBody1">
                 <jsonpath>$.AMT</jsonpath>
             </setBody>
-            <log id="_log10" message="FCB91178Y_AMT Body: ${body}"/>
-        </route>
-        <route id="CheckDeposit-route">
-            <from id="_from4" uri="direct:check-deposit"/>
-            <to id="呼叫FCB91103G_1服務" uri="http4://localhost:8080/FCB91103G"/>
-            <convertBodyTo id="HTTP回應純文字化" type="java.lang.String"/>
-            <log id="_log8" message="FCB91103G Response： ${body}"/>
-            <marshal id="XML to JSON" ref="xml2json"/>
-            <log id="_log8" message="FCB91103G Response： ${body}"/>
-            <setHeader headerName="balanceAmt" id="取得餘額">
-                <jsonpath>$.TxRs.PBBalAmt</jsonpath>
-            </setHeader>
-            <log id="_log9" message="balanceAmt： ${header.balanceAmt}"/>
+            <log id="_log2" message="取得金額: ${body}"/>
         </route>
     </camelContext>
 </beans>
