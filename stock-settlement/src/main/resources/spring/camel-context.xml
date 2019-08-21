@@ -5,34 +5,34 @@
         id="FCB91178YAggregationStrategy" scope="singleton"/>
     <bean class="com.redhat.poc.bean.FormatBean" id="formatBean" scope="singleton"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-        <route id="stock-settlement-route">
-            <from id="_from1" uri="file:input"/>
+        <route id="證券交割檔處理">
+            <from id="讀取交割匯入檔" uri="file:input"/>
             <log id="_log1" message="BODY: ${body}"/>
-            <to id="_to1" uri="txfrmr:com.redhat.firstbank.poc/MapREQ"/>
-            <setProperty id="_setProperty1" propertyName="TX_INPUT_JSON">
+            <to id="交割匯入檔解析JSON" uri="txfrmr:com.redhat.firstbank.poc/MapREQ"/>
+            <setProperty id="保存輸入" propertyName="TX_INPUT_JSON">
                 <simple>${body}</simple>
             </setProperty>
             <!-- 分公司劃撥專戶帳號 -->
-            <setHeader headerName="SUBSTOCKCOMACCT" id="_setHeader2">
+            <setProperty id="取得分公司劃撥專戶帳號" propertyName="SUBSTOCKCOMACCT">
                 <jsonpath>$.REQ.Header.SUBSTOCKCOMACCT</jsonpath>
-            </setHeader>
-            <log id="_log2" message="BODY: ${body}"/>
-            <log id="_log3" message="header.STOCKCOMCODE: ${in.header.STOCKCOMCODE}"/>
-            <split id="_split1">
+            </setProperty>
+            <split id="平行處理投資人扣款">
                 <jsonpath>$.REQ.Body[?(@.TRANSID =="1497")]</jsonpath>
-                <to id="_to2" uri="direct:FCB91148Y_T"/>
+                <to id="投資人扣款-子程序" uri="direct:FCB91148Y_T"/>
             </split>
-            <setBody id="_setBody1">
+            <setBody id="取得原始輸入">
                 <simple>${property.TX_INPUT_JSON}</simple>
             </setBody>
-            <log id="_log11" message="BODY: ${body}"/>
-            <split id="_split2" strategyRef="FCB91178YAggregationStrategy">
+            <log id="_log2" message="BODY: ${body}"/>
+            <split id="匯總券商存入" strategyRef="FCB91178YAggregationStrategy">
                 <jsonpath>$.REQ.Body[?(@.TRANSID =="1797")]</jsonpath>
-                <to id="_to4" uri="direct:FCB91178Y"/>
+                <to id="一入券商-子程序" uri="direct:FCB91178Y"/>
             </split>
-            <log message="RESULT: ${body}"/>
-            <log id="_log4" message="Property FCB91178Y_AMT: ${property.FCB91178Y_AMT}"/>
-            <!-- <log id="_log4" message="INPUT BODY: ${property.TX_INPUT_JSON}"/> -->
+            <log id="_log3" message="RESULT: ${body}"/>
+            <to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
+            <log id="_log4" message="REQUEST: ${body}"/>
+            <to id="呼叫FCB91178Y服務" uri="http4://localhost:8080/FCB91178Y"/>
+            <to id="確認餘額與調撥" uri="direct:check-deposit"/>
         </route>
         <route id="call-FCB91148Y_T-route">
             <from id="_from2" uri="direct:FCB91148Y_T"/>
@@ -52,29 +52,24 @@
             <setHeader headerName="AMT" id="_setHeader7">
                 <jsonpath>$.AMT</jsonpath>
             </setHeader>
-            <!-- <setHeader headerName="AMT" id="_setHeader1">
-                <method method="stringToFloatString(${header.AMT})" ref="formatBean"/>
-            </setHeader> -->
-            <to id="_to3" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
+            <!-- <setHeader headerName="AMT" id="_setHeader1"> <method method="stringToFloatString(${header.AMT})" 
+				ref="formatBean"/> </setHeader> -->
+            <to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
             <log id="_log6" message="REQUEST: ${body}"/>
             <to id="_to5" uri="http4://localhost:8080/FCB91148Y_T"/>
             <log id="_log7" message="RESPONSE: ${body}"/>
         </route>
         <route id="call-FCB91178Y-route">
             <from id="_from3" uri="direct:FCB91178Y"/>
-            <log id="_log8" message="存： ${body}"/>
-            <setBody>
+            <setBody id="_setBody1">
                 <jsonpath>$.AMT</jsonpath>
             </setBody>
-            <log message="FCB91178Y_AMT Body: ${body}"/>
-            <!-- <setHeader headerName="AMT" id="_setHeader9">
-                <method method="stringToFloat(${header.AMT})" ref="formatBean"/>
-            </setHeader>
-             -->
-             <!-- <setProperty id="_setProperty3" propertyName="FCB91178Y_AMT">
-                <ognl>properties['FCB91178Y_AMT'] + request.headers.AMT</ognl>
-            </setProperty> -->
-            <!-- <log id="_log9" message="FCB91178Y_AMT: ${property.FCB91178Y_AMT}"/> -->
+            <log id="_log10" message="FCB91178Y_AMT Body: ${body}"/>
+        </route>
+        <route id="CheckDeposit-route">
+            <from id="_from4" uri="direct:check-deposit"/>
+            <to id="呼叫FCB91103G_1服務" uri="http4://localhost:8080/FCB91103G"/>
+            <log id="_log8" message="FCB91103G Response： ${body}"/>
         </route>
     </camelContext>
 </beans>
