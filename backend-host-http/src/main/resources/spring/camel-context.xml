@@ -5,22 +5,25 @@
         <restConfiguration bindingMode="auto" component="servlet"
             host="0.0.0.0" port="8080"/>
         <rest apiDocs="true" enableCORS="true" id="backend-host-http">
-            <post id="FCB91148Y_T" uri="/FCB91148Y_T">
+        	<get id="GET_FCB91148Y_T" uri="/FCB91148Y_T">
+                <to uri="direct:FCB91148Y_T"/>
+            </get>
+            <post id="POST_FCB91148Y_T" uri="/FCB91148Y_T">
                 <to uri="direct:FCB91148Y_T"/>
             </post>
-            <post id="/FCB91178Y" uri="/FCB91178Y">
+            <post id="POST_FCB91178Y" uri="/FCB91178Y">
                 <to uri="direct:FCB91178Y"/>
             </post>
-            <post id="FCB91103G" uri="/FCB91103G">
+            <post id="POST_FCB91103G" uri="/FCB91103G">
                 <to uri="direct:FCB91103G"/>
             </post>
-            <post id="FCB91348Y" uri="/FCB91348Y">
+            <post id="POST_FCB91348Y" uri="/FCB91348Y">
                 <to uri="direct:FCB91348Y"/>
             </post>
-            <post id="FCB91148Y" uri="/FCB91148Y">
+            <post id="POST_FCB91148Y" uri="/FCB91148Y">
                 <to uri="direct:FCB91148Y"/>
             </post>
-            <post id="/FCB91178Y_T" uri="/FCB91178Y_T">
+            <post id="POST_FCB91178Y_T" uri="/FCB91178Y_T">
                 <to uri="direct:FCB91178Y_T"/>
             </post>
         </rest>
