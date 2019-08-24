@@ -13,3 +13,5 @@ spec:
           env:
           - name: SPRING_APPLICATION_JSON
             value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: SPRING_PROFILES_ACTIVE
+            value: openshift

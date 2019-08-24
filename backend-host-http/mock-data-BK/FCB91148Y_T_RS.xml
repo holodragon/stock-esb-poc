@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XML>
+<Header>
+<TxID>FCB91148Y_T</TxID>
+<SystemKey>FCB00</SystemKey>
+<TxSeqNo>20190805151601</TxSeqNo>
+<MsgSeqNo>20009</MsgSeqNo>
+<CltTimeStamp>2019-08-05 15:16:01.013</CltTimeStamp>
+<CustID>
+</CustID>
+<UserID>
+</UserID>
+<AcctNo>
+</AcctNo>
+<SvrTimeStamp>2019-08-05 15:16:03.048</SvrTimeStamp>
+<MsgDirection>RS</MsgDirection>
+<System>FCB91</System>
+<StatusCode>T01K</StatusCode>
+<StatusDesc>Success</StatusDesc>
+</Header>
+<TxRs>
+<RecTimes1>1</RecTimes1>
+<BusType1>T</BusType1>
+<WsID1>HD</WsID1>
+<HostSeqNo1>20006</HostSeqNo1>
+<TxID1>148Y</TxID1>
+<TransAcc1>09350000000</TransAcc1>
+<PBBalSign1>+</PBBalSign1>
+<PBBalAmt1>00000006231</PBBalAmt1>
+<Amt1>*********2,274.00</Amt1>
+<Blank1>     </Blank1>
+<AgrAcct1>09368000000</AgrAcct1>
+<CustName1>第一政治</CustName1>
+<StockName1>生達    </StockName1>
+<Phone1>02 25530000         </Phone1>
+<T100MsgCode2>T100</T100MsgCode2>
+<T100RecTimes2>1</T100RecTimes2>
+<RecTimes2>THD2</RecTimes2>
+<BusType2>0</BusType2>
+<WsID2>00</WsID2>
+<HostSeqNo2>6148Y</HostSeqNo2>
+<TxID2>0936</TxID2>
+</TxRs>
+</XML>

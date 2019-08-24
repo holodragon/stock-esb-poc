@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FCB91148Y>
+<XML>
+ <Header>
+  <TxID>FCB91148Y</TxID>
+  <SystemKey>FCB11</SystemKey>
+  <TxSeqNo>20040408000001</TxSeqNo>
+  <MsgSeqNo>000001</MsgSeqNo>
+  <SvrTimeStamp>2004-05-03 17:45:220157</SvrTimeStamp>
+  <MsgDirection>RS</MsgDirection>
+  <System>FCB91</System>
+  <StatusCode>T100</StatusCode>
+  <StatusDesc>Success</StatusDesc>
+ </Header>
+ <TxRs>
+  <PayerAcctNo>03810234567</PayerAcctNo>
+  <TxDate>930503</TxDate>
+  <TxTime>174240</TxTime>
+  <PayerBank>00700000</PayerBank>
+  <CustID>00050523220</CustID>
+  <TxSeqNo>026117</TxSeqNo>
+  <TxSubSeq>0000</TxSubSeq>
+  <PayeeBank>00700000</PayeeBank>
+  <PayeeAcctNo>04810000000</PayeeAcctNo>
+  <Amt>156677.00</Amt>
+  <InFee>0</InFee>
+  <ExFee>0</ExFee>
+  <PBBalSign>+</PBBalSign>
+  <PBBalAmt>100343259.00</PBBalAmt>
+  <AvlBalSign>+</AvlBalSign>
+  <AvlBalAmt>100343259.00</AvlBalAmt>
+  <DelayFlag>0</DelayFlag>
+  <ClsDate>0930505</ClsDate>
+  <PmtDate>0930429</PmtDate>
+  <FISCSeqNo>                    </FISCSeqNo>
+  <HostSeqNo>0000000000</HostSeqNo>
+ </TxRs>
+</XML>

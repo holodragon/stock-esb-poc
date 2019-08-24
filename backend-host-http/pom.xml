@@ -11,6 +11,8 @@
 	<description>Backend Host HTTP Project</description>
 
 	<properties>
+		<fabric8.generator.fromMode>isTag</fabric8.generator.fromMode>
+		<fabric8.generator.from>stock-settlement/fuse7-java-openshift:1.3</fabric8.generator.from>
 		<maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
 		<!-- <fuse.version>7.3.0.fuse-730058-redhat-00001</fuse.version> -->
 		<fuse.version>7.3.1.fuse-731003-redhat-00003</fuse.version>
@@ -88,14 +90,8 @@
 	</pluginRepositories>
 	<build>
 		<defaultGoal>spring-boot:run</defaultGoal>
-		<!-- <resources>
-			<resource>
-				<directory>.transformations</directory>
-			</resource>
-			<resource>
-				<directory>src/main/resources/</directory>
-			</resource>
-		</resources> -->
+		<!-- <resources> <resource> <directory>.transformations</directory> </resource> 
+			<resource> <directory>src/main/resources/</directory> </resource> </resources> -->
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>

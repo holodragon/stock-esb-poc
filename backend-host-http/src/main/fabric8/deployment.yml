@@ -1,9 +1,13 @@
 spec:
   template:
     spec:
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: mock-data
+          name: volume-mock-data
       containers:
-        - 
-          resources:
+        - resources:
             requests:
               cpu: "0.2"
 #              memory: 256Mi
@@ -13,3 +17,8 @@ spec:
           env:
           - name: SPRING_APPLICATION_JSON
             value: '{"server":{"tomcat":{"max-threads":1}}}'
+          - name: SPRING_PROFILES_ACTIVE
+            value: openshift
+          volumeMounts:
+            - mountPath: /deployments/mock-data
+              name: volume-mock-data

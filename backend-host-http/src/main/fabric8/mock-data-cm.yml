@@ -1,0 +1,131 @@
+data:
+  FCB91103G_1.RS.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<XML>\r\n\t<Header>\r\n\t\t<TxID>FCB91103G_1</TxID>\r\n\t\t<SystemKey>FCB66</SystemKey>\r\n\t\t<TxSeqNo>20081017103403</TxSeqNo>\r\n\t\t<MsgSeqNo>56202</MsgSeqNo>\r\n\t\t<CltTimeStamp>2008-10-17
+    10:34:030963</CltTimeStamp>\r\n\t\t<CustID>00000000</CustID>\r\n\t\t<UserID>0000</UserID>\r\n\t\t<AcctNo>00000000000</AcctNo>\r\n\t\t<SvrTimeStamp>2008-10-17
+    10:34:11.123</SvrTimeStamp>\r\n\t\t<MsgDirection>RS</MsgDirection>\r\n\t\t<System>FCB91</System>\r\n\t\t<StatusCode>T100</StatusCode>\r\n\t\t<StatusDesc>Success</StatusDesc>\r\n\t</Header>\r\n\t<TxRs>\r\n\t\t<AcctNo>31150280000</AcctNo>\r\n\t\t<TxDate>0971017</TxDate>\r\n\t\t<TxTime>103415</TxTime>\r\n\t\t<PBBalSign>+</PBBalSign>\r\n\t\t<PBBalAmt>252638.00</PBBalAmt>\r\n\t\t<UnusedBal>0.00</UnusedBal>\r\n\t</TxRs>\r\n</XML>\r\n"
+  FCB91148Y_RS.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<!DOCTYPE FCB91148Y>\r\n<XML>\r\n
+    <Header>\r\n  <TxID>FCB91148Y</TxID>\r\n  <SystemKey>FCB11</SystemKey>\r\n  <TxSeqNo>20040408000001</TxSeqNo>\r\n
+    \ <MsgSeqNo>000001</MsgSeqNo>\r\n  <SvrTimeStamp>2004-05-03 17:45:220157</SvrTimeStamp>\r\n
+    \ <MsgDirection>RS</MsgDirection>\r\n  <System>FCB91</System>\r\n  <StatusCode>T100</StatusCode>\r\n
+    \ <StatusDesc>Success</StatusDesc>\r\n </Header>\r\n <TxRs>\r\n  <PayerAcctNo>03810234567</PayerAcctNo>\r\n
+    \ <TxDate>930503</TxDate>\r\n  <TxTime>174240</TxTime>\r\n  <PayerBank>00700000</PayerBank>\r\n
+    \ <CustID>00050523220</CustID>\r\n  <TxSeqNo>026117</TxSeqNo>\r\n  <TxSubSeq>0000</TxSubSeq>\r\n
+    \ <PayeeBank>00700000</PayeeBank>\r\n  <PayeeAcctNo>04810000000</PayeeAcctNo>\r\n
+    \ <Amt>156677.00</Amt>\r\n  <InFee>0</InFee>\r\n  <ExFee>0</ExFee>\r\n  <PBBalSign>+</PBBalSign>\r\n
+    \ <PBBalAmt>100343259.00</PBBalAmt>\r\n  <AvlBalSign>+</AvlBalSign>\r\n  <AvlBalAmt>100343259.00</AvlBalAmt>\r\n
+    \ <DelayFlag>0</DelayFlag>\r\n  <ClsDate>0930505</ClsDate>\r\n  <PmtDate>0930429</PmtDate>\r\n
+    \ <FISCSeqNo>                    </FISCSeqNo>\r\n  <HostSeqNo>0000000000</HostSeqNo>\r\n
+    </TxRs>\r\n</XML>"
+  FCB91148Y_T_RS.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <XML>
+    <Header>
+    <TxID>FCB91148Y_T</TxID>
+    <SystemKey>FCB00</SystemKey>
+    <TxSeqNo>20190805151601</TxSeqNo>
+    <MsgSeqNo>20009</MsgSeqNo>
+    <CltTimeStamp>2019-08-05 15:16:01.013</CltTimeStamp>
+    <CustID>
+    </CustID>
+    <UserID>
+    </UserID>
+    <AcctNo>
+    </AcctNo>
+    <SvrTimeStamp>2019-08-05 15:16:03.048</SvrTimeStamp>
+    <MsgDirection>RS</MsgDirection>
+    <System>FCB91</System>
+    <StatusCode>T01K</StatusCode>
+    <StatusDesc>Success</StatusDesc>
+    </Header>
+    <TxRs>
+    <RecTimes1>1</RecTimes1>
+    <BusType1>T</BusType1>
+    <WsID1>HD</WsID1>
+    <HostSeqNo1>20006</HostSeqNo1>
+    <TxID1>148Y</TxID1>
+    <TransAcc1>09350000000</TransAcc1>
+    <PBBalSign1>+</PBBalSign1>
+    <PBBalAmt1>00000006231</PBBalAmt1>
+    <Amt1>*********2,274.00</Amt1>
+    <Blank1>     </Blank1>
+    <AgrAcct1>09368000000</AgrAcct1>
+    <CustName1>第一政治</CustName1>
+    <StockName1>生達    </StockName1>
+    <Phone1>02 25530000         </Phone1>
+    <T100MsgCode2>T100</T100MsgCode2>
+    <T100RecTimes2>1</T100RecTimes2>
+    <RecTimes2>THD2</RecTimes2>
+    <BusType2>0</BusType2>
+    <WsID2>00</WsID2>
+    <HostSeqNo2>6148Y</HostSeqNo2>
+    <TxID2>0936</TxID2>
+    </TxRs>
+    </XML>
+  FCB91178Y_RS.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<!DOCTYPE FCB91178Y>\r\n<XML>\r\n
+    <Header>\r\n  <TxID>FCB91178Y</TxID>\r\n  <SystemKey>FCB11</SystemKey>\r\n  <TxSeqNo>20040408000001</TxSeqNo>\r\n
+    \ <MsgSeqNo>000001</MsgSeqNo>\r\n  <SvrTimeStamp>2004-04-15 21:11:450202</SvrTimeStamp>\r\n
+    \ <MsgDirection>RS</MsgDirection>\r\n  <System>FCB91</System>\r\n  <StatusCode>T100</StatusCode>\r\n
+    \ <StatusDesc>Success</StatusDesc>\r\n </Header>\r\n <TxRs>\r\n  <PayerAcctNo>45676930415</PayerAcctNo>\r\n
+    \ <TxDate>210912</TxDate>\r\n  <TxTime>007000</TxTime>\r\n  <PayerBank>??</PayerBank>\r\n
+    \ <CustID>?$?</CustID>\r\n  <TxSubSeq>0</TxSubSeq>\r\n  <PayeeBank>7038102</PayeeBank>\r\n
+    \ <PayeeAcctNo>34567000000</PayeeAcctNo>\r\n  <Amt>178000000.00</Amt>\r\n  <Fee>0</Fee>\r\n
+    \ <PBBalSign>0</PBBalSign>\r\n  <PBBalAmt>+00000000000.00</PBBalAmt>\r\n  <AvlBalSign>0</AvlBalSign>\r\n
+    \ <AvlBalAmt>+00000000000.00</AvlBalAmt>\r\n  <DelayFlag>0</DelayFlag>\r\n  <FISCSeqNo>0000000000930409
+    \   </FISCSeqNo>\r\n  <HostSeqNo>          </HostSeqNo>\r\n </TxRs>\r\n</XML>"
+  FCB91178Y_T_RS.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?><XML>
+    <Header>
+    <TxID>FCB91178Y_T</TxID>
+    <SystemKey>FCB11</SystemKey>
+    <TxSeqNo>20100618386915</TxSeqNo>
+    <MsgSeqNo>0</MsgSeqNo>
+    <CltTimeStamp>2010-06-18 13:35:50.819</CltTimeStamp>
+    <CustID>00000685830</CustID>
+    <UserID>
+    </UserID>
+    <AcctNo>24110071652</AcctNo>
+    <SvrTimeStamp>2010-06-18 14:44:39.968</SvrTimeStamp>
+    <MsgDirection>RS</MsgDirection>
+    <System>FCB91</System>
+    <StatusCode>T18B</StatusCode>
+    <StatusDesc>Success</StatusDesc>
+    </Header>
+    <TxRs>
+    <RecTimes1>1</RecTimes1>
+    <BusType1>T</BusType1>
+    <WsID1>H3</WsID1>
+    <HostSeqNo1>20001</HostSeqNo1>
+    <TxID1>178Y</TxID1>
+    <TransAcc1>17210000000</TransAcc1>
+    <Memo1>0004609111  </Memo1>
+    <Amt1>***********500.00</Amt1>
+    <Blank1>     </Blank1>
+    <PmtTpye1>10</PmtTpye1>
+    <AgrAcct1>00000000000</AgrAcct1>
+    <CustName1>¤T¤저¡@</CustName1>
+    <StockName1>          </StockName1>
+    <Phone1>999                 </Phone1>
+    <T100MsgCode2>T100</T100MsgCode2>
+    <T100RecTimes2>1</T100RecTimes2>
+    <BusType2>T</BusType2>
+    <WsID2>H3</WsID2>
+    <HostSeqNo2>20001</HostSeqNo2>
+    <TxID2>178Y</TxID2>
+    <PBBalSign>+</PBBalSign>
+    <PBBalAmt>00000000000</PBBalAmt>
+    <AvlBalSign>+</AvlBalSign>
+    <AvlBalAmt>00000000000</AvlBalAmt>
+    </TxRs>
+    </XML>
+  FCB91348Y_RS.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<!DOCTYPE FCB91348Y>\r\n<XML>\r\n
+    <Header>\r\n  <TxID>FCB91348Y</TxID>\r\n  <SystemKey>FCB11</SystemKey>\r\n  <TxSeqNo>20040408000001</TxSeqNo>\r\n
+    \ <MsgSeqNo>000001</MsgSeqNo>\r\n  <SvrTimeStamp>2004-05-03 17:51:110674</SvrTimeStamp>\r\n
+    \ <MsgDirection>RS</MsgDirection>\r\n  <System>FCB91</System>\r\n  <StatusCode>T100</StatusCode>\r\n
+    \ <StatusDesc>Success</StatusDesc>\r\n </Header>\r\n <TxRs>\r\n  <PayerAcctNo>04830100024</PayerAcctNo>\r\n
+    \ <TxDate>930503</TxDate>\r\n  <TxTime>174806</TxTime>\r\n  <PayerBank>00700000</PayerBank>\r\n
+    \ <CustID>00050000000</CustID>\r\n  <TxSeqNo>003211</TxSeqNo>\r\n  <TxSubSeq>0000</TxSubSeq>\r\n
+    \ <PayeeBank>00700000</PayeeBank>\r\n  <PayeeAcctNo>03830100019</PayeeAcctNo>\r\n
+    \ <Amt>335.00</Amt>\r\n  <InFee>0</InFee>\r\n  <ExFee>0</ExFee>\r\n  <PBBalSign>+</PBBalSign>\r\n
+    \ <PBBalAmt>1541211.34</PBBalAmt>\r\n  <AvlBalSign>+</AvlBalSign>\r\n  <AvlBalAmt>154121134</AvlBalAmt>\r\n
+    \ <DelayFlag>1</DelayFlag>\r\n  <ClsDate>0930503</ClsDate>\r\n  <PmtDate>0930409</PmtDate>\r\n
+    \ <FISCSeqNo>00000000000000000000</FISCSeqNo>\r\n  <HostSeqNo>0015220025</HostSeqNo>\r\n
+    </TxRs>\r\n</XML>"

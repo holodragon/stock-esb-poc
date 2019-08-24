@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FCB91178Y>
+<XML>
+ <Header>
+  <TxID>FCB91178Y</TxID>
+  <SystemKey>FCB11</SystemKey>
+  <TxSeqNo>20040408000001</TxSeqNo>
+  <MsgSeqNo>000001</MsgSeqNo>
+  <SvrTimeStamp>2004-04-15 21:11:450202</SvrTimeStamp>
+  <MsgDirection>RS</MsgDirection>
+  <System>FCB91</System>
+  <StatusCode>T100</StatusCode>
+  <StatusDesc>Success</StatusDesc>
+ </Header>
+ <TxRs>
+  <PayerAcctNo>45676930415</PayerAcctNo>
+  <TxDate>210912</TxDate>
+  <TxTime>007000</TxTime>
+  <PayerBank>??</PayerBank>
+  <CustID>?$?</CustID>
+  <TxSubSeq>0</TxSubSeq>
+  <PayeeBank>7038102</PayeeBank>
+  <PayeeAcctNo>34567000000</PayeeAcctNo>
+  <Amt>178000000.00</Amt>
+  <Fee>0</Fee>
+  <PBBalSign>0</PBBalSign>
+  <PBBalAmt>+00000000000.00</PBBalAmt>
+  <AvlBalSign>0</AvlBalSign>
+  <AvlBalAmt>+00000000000.00</AvlBalAmt>
+  <DelayFlag>0</DelayFlag>
+  <FISCSeqNo>0000000000930409    </FISCSeqNo>
+  <HostSeqNo>          </HostSeqNo>
+ </TxRs>
+</XML>
