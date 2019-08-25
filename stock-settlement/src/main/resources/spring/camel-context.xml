@@ -1,253 +1,257 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <bean class="com.redhat.poc.bean.SumAggregationStrategy"
-        id="SumAggregationStrategy" scope="singleton"/>
-    <bean class="com.redhat.poc.bean.JsonLineAggregationStrategy"
-        id="JsonLineAggregationStrategy" scope="singleton"/>
-    <bean class="com.redhat.poc.bean.FormatBean" id="formatBean" scope="singleton"/>
-    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
-    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-        <dataFormats>
-            <xmljson contentTypeHeader="false"
-                forceTopLevelObject="false" id="xml2json"
-                namespaceLenient="false" removeNamespacePrefixes="false"
-                skipNamespaces="false" skipWhitespace="false" trimSpaces="false"/>
-            <json allowJmsType="false" allowUnmarshallType="false"
-                contentTypeHeader="false"
-                enableJaxbAnnotationModule="false" id="gson-dataformat"
-                library="XStream" prettyPrint="false"
-                useDefaultObjectMapper="true" useList="false"/>
-        </dataFormats>
-        <route id="證券交割檔處理">
-            <from id="讀取交割匯入檔" uri="file:input"/>
-            <log id="_log1" message="BODY: ${body}"/>
-            <to id="交割匯入檔解析JSON" uri="txfrmr:com.redhat.firstbank.poc/MapREQ"/>
-            <log id="_log1" message="BODY: ${body}"/>
-            <setProperty id="保存輸入" propertyName="TX_INPUT_JSON">
-                <simple>${body}</simple>
-            </setProperty>
-            <!-- 分公司劃撥專戶帳號 -->
-            <setProperty id="取得分公司劃撥專戶帳號" propertyName="SUBSTOCKCOMACCT">
-                <jsonpath>$.ESB028001.Header.SUBSTOCKCOMACCT</jsonpath>
-            </setProperty>
-            <setProperty id="設定扣數一扣" propertyName="TX_COUNT">
-                <constant>1</constant>
-            </setProperty>
-            <to id="執行 1.1.多扣投資人" uri="direct:Usecase1.1"/>
-            <setBody id="1.2.取得原始輸入">
-                <simple>${property.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="執行 1.2.一入券商作業" uri="direct:Usecase1.2"/>
-            <setBody id="2.1.取得原始輸入">
-                <simple>${property.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="執行 2.1.券商待轉出加總作業" uri="direct:Usecase2.1"/>
-            <setProperty id="取得券商待轉出金額" propertyName="SUBAMT">
-                <simple>${body}</simple>
-            </setProperty>
-            <setBody id="2.2.取得原始輸入">
-                <simple>${property.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="執行 2.2.券商餘額作業" uri="direct:Usecase2.2"/>
-            <setBody id="3.1.取得一扣金額">
-                <simple>${property.SUBAMT}</simple>
-            </setBody>
-            <to id="執行 3.1.一扣券商" uri="direct:Usecase3.1"/>
-            <setBody id="3.2.取得原始輸入">
-                <simple>${property.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="執行 3.2.多入投資人" uri="direct:Usecase3.2"/>
-            <!-- <setBody id="2.2.取得原始輸入"> <simple>${property.TX_INPUT_JSON}</simple> 
-				</setBody> <to id="確認餘額與調撥" uri="direct:check-deposit" /> -->
-            <setBody id="4.1.取得原始輸入">
-                <simple>${property.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="Input to Output as Base" uri="txfrmr:com.redhat.firstbank.poc/MapJsonREQtoJsonRESP"/>
-            <log id="_log11" message="REQUEST: ${body}"/>
-            <to id="轉出回覆檔格式" uri="txfrmr:com.redhat.firstbank.poc/MapRESP"/>
-            <!-- <setHeader headerName="CamelFileName" id="_setHeader11">
-                <simple>${file:name.noext}_R1.dat</simple>
-            </setHeader> -->
-            <to id="輸出回覆檔" uri="file:output?fileName=${file:name.noext}_R${property.TX_COUNT}.dat"/>
-        </route>
-        <route id="1.1.多扣投資人作業">
-            <from id="多扣投資人作業" uri="direct:Usecase1.1"/>
-            <split id="平行處理投資人扣款" strategyRef="JsonLineAggregationStrategy">
-                <jsonpath writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
-                <!-- <jsonpath>$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath> -->
-                <!-- <to id="投資人扣款-子程序" uri="direct:FCB91148Y_T" /> -->
-                <log id="_log5" message="扣： ${body}"/>
-                <setProperty id="_setProperty1" propertyName="TX_JSON_BODY">
-                    <simple>${body}</simple>
-                </setProperty>
-                <!-- <setHeader headerName="ACCTNO" id="_setHeader3">
-                    <simple>${body[ACCTNO]}</simple>
-                </setHeader>
-                <log message="FOR DEBUG： ${header.ACCTNO}"/> -->
-                <setHeader headerName="ACCTNO" id="_setHeader3">
-                    <jsonpath>$.ACCTNO</jsonpath>
-                </setHeader>
-                <setHeader headerName="CUSTID" id="_setHeader4">
-                    <jsonpath>$.CUSTID</jsonpath>
-                </setHeader>
-                <setHeader headerName="TXSEQNO" id="_setHeader5">
-                    <jsonpath>$.TXSEQNO</jsonpath>
-                </setHeader>
-                <setHeader headerName="TXSUBSEQ" id="_setHeader6">
-                    <jsonpath>$.TXSUBSEQ</jsonpath>
-                </setHeader>
-                <setHeader headerName="AMT" id="_setHeader7">
-                    <jsonpath>$.AMT</jsonpath>
-                </setHeader>
-                <to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
-                <!-- <log id="_log6" message="REQUEST: ${body}"/> -->
-                <to id="_to5" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y_T"/>
-                <convertBodyTo id="_convertBodyTo1" type="java.lang.String"/>
-                <marshal id="_marshal1" ref="xml2json"/>
-                <log id="_log7" message="RESPONSE: ${body}"/>
-                <setHeader headerName="PBBALSIGN" id="_setHeader1">
-                    <jsonpath>$.TxRs.PBBalSign1</jsonpath>
-                </setHeader>
-                <setHeader headerName="PBBALAMT" id="_setHeader2">
-                    <jsonpath>$.TxRs.PBBalAmt1</jsonpath>
-                </setHeader>
-                <setHeader headerName="TransAcc" id="_setHeader8">
-                    <jsonpath>$.TxRs.TransAcc1</jsonpath>
-                </setHeader>
-                <setHeader headerName="AgrAcct" id="_setHeader9">
-                    <constant>00000000000</constant>
-                </setHeader>
-                <setHeader headerName="HOSTCODE" id="_setHeader10">
-                    <jsonpath>$.Header.StatusCode</jsonpath>
-                </setHeader>
-                <setBody id="_setBody2">
-                    <simple>${property.TX_JSON_BODY}</simple>
-                </setBody>
-                <to id="轉換單筆扣款結果" uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody"/>
-                <log id="_log8" message="扣款結果: ${body}"/>
-            </split>
-            <log id="_log16" message="扣款總結: ${body}"/>
-        </route>
-        <route id="1.2.一入券商作業">
-            <from id="一入券商作業" uri="direct:Usecase1.2"/>
-            <split id="匯總券商存入" strategyRef="SumAggregationStrategy">
-                <jsonpath>$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
-                <to id="取得1497金額" uri="direct:getAmount"/>
-            </split>
-            <log id="_log3" message="RESULT: ${body}"/>
-            <to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
-            <!-- <log id="_log4" message="REQUEST: ${body}"/> -->
-            <to id="呼叫FCB91178Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y"/>
-        </route>
-        <route id="2.1.券商待轉出加總作業">
-            <from id="券商待轉出加總作業" uri="direct:Usecase2.1"/>
-            <split id="匯總券商轉出" strategyRef="SumAggregationStrategy">
-                <jsonpath>$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
-                <to id="取得1797金額" uri="direct:getAmount"/>
-            </split>
-            <log id="_log10" message="Amount to transfer out: ${body}"/>
-        </route>
-        <route id="2.2.券商餘額調撥作業">
-            <from id="券商餘額作業" uri="direct:Usecase2.2"/>
-            <to id="呼叫FCB91103G_1服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91103G"/>
-            <convertBodyTo id="HTTP回應純文字化" type="java.lang.String"/>
-            <!-- <log id="_log8" message="FCB91103G Response： ${body}"/> -->
-            <marshal id="XML to JSON" ref="xml2json"/>
-            <!-- <log id="_log8" message="FCB91103G Response： ${body}"/> -->
-            <setBody id="取得餘額">
-                <jsonpath>$.TxRs.PBBalAmt</jsonpath>
-            </setBody>
-            <setBody id="轉型餘額">
-                <simple>${bodyAs(Float)}</simple>
-            </setBody>
-            <setHeader headerName="amtDifference" id="計算差額">
-                <groovy>exchange.properties.SUBAMT - in.body</groovy>
-            </setHeader>
-            <log id="_log9" message="(投資人 - 券商) balanceAmt： ${header.amtDifference}"/>
-            <!-- <setHeader headerName="amtDifference"> <constant>20.0</constant> 
-				</setHeader> -->
-            <choice id="判斷餘額是否足夠">
-                <when id="_when1">
-                    <simple>${header.amtDifference} &gt;= 0</simple>
-                    <log id="_log12" message="沒錢了！"/>
-                    <to id="FCB91348Y_RQ產生" uri="freemarker:ftl/FCB91348Y_RQ.ftl"/>
-                    <log id="_log13" message="REQUEST Body: ${body}"/>
-                    <to id="呼叫FCB91348Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91348Y"/>
-                    <log id="_log14" message="RESPONSE Body: ${body}"/>
-                </when>
-                <otherwise id="_otherwise1">
-                    <log id="_log15" message="餘額充足！"/>
-                </otherwise>
-            </choice>
-        </route>
-        <route id="3.1.一扣券商">
-            <from id="一扣券商" uri="direct:Usecase3.1"/>
-            <log id="_log4" message="3.1.一扣券商"/>
-            <log id="_log6" message="RESULT: ${body}"/>
-            <to id="FCB91148Y_RQ產生" uri="freemarker:ftl/FCB91148Y_RQ.ftl"/>
-            <!-- <log id="_log4" message="REQUEST: ${body}"/> -->
-            <to id="呼叫FCB91148Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y"/>
-        </route>
-        <route id="3.2.多入投資人">
-            <from id="多入投資人" uri="direct:Usecase3.2"/>
-            <log id="_log17" message="3.2.多入投資人"/>
-            <split id="平行處理投資人入款" strategyRef="JsonLineAggregationStrategy">
-                <jsonpath writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
-                <log id="_log18" message="入： ${body}"/>
-                <setProperty id="_setProperty2" propertyName="TX_JSON_BODY">
-                    <simple>${body}</simple>
-                </setProperty>
-                <setHeader headerName="ACCTNO" id="_setHeader11">
-                    <jsonpath>$.ACCTNO</jsonpath>
-                </setHeader>
-                <setHeader headerName="CUSTID" id="_setHeader12">
-                    <jsonpath>$.CUSTID</jsonpath>
-                </setHeader>
-                <setHeader headerName="TXSEQNO" id="_setHeader13">
-                    <jsonpath>$.TXSEQNO</jsonpath>
-                </setHeader>
-                <setHeader headerName="TXSUBSEQ" id="_setHeader14">
-                    <jsonpath>$.TXSUBSEQ</jsonpath>
-                </setHeader>
-                <setHeader headerName="AMT" id="_setHeader15">
-                    <jsonpath>$.AMT</jsonpath>
-                </setHeader>
-                <to id="FCB91178Y_T_RQ產生" uri="freemarker:ftl/FCB91178Y_T_RQ.ftl"/>
-                <!-- <log id="_log11" message="REQUEST: ${body}"/> -->
-                <to id="_to1" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y_T"/>
-                <convertBodyTo id="_convertBodyTo2" type="java.lang.String"/>
-                <marshal id="_marshal2" ref="xml2json"/>
-                <log id="_log19" message="RESPONSE: ${body}"/>
-                <setHeader headerName="PBBALSIGN" id="_setHeader16">
-                    <jsonpath>$.TxRs.PBBalSign</jsonpath>
-                </setHeader>
-                <setHeader headerName="PBBALAMT" id="_setHeader17">
-                    <jsonpath>$.TxRs.PBBalAmt</jsonpath>
-                </setHeader>
-                <setHeader headerName="TransAcc" id="_setHeader18">
-                    <jsonpath>$.TxRs.TransAcc1</jsonpath>
-                </setHeader>
-                <setHeader headerName="AgrAcct" id="_setHeader19">
-                    <jsonpath>$.TxRs.AgrAcct1</jsonpath>
-                </setHeader>
-                <setHeader headerName="HOSTCODE" id="_setHeader20">
-                    <jsonpath>$.Header.StatusCode</jsonpath>
-                </setHeader>
-                <setBody id="_setBody3">
-                    <simple>${property.TX_JSON_BODY}</simple>
-                </setBody>
-                <to id="轉換單筆入款結果" uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody"/>
-                <log id="_log20" message="入款結果: ${body}"/>
-            </split>
-            <log id="_log21" message="入款總結: ${body}"/>
-        </route>
-        <route id="取得金額">
-            <from id="_from1" uri="direct:getAmount"/>
-            <setBody id="_setBody1">
-                <jsonpath>$.AMT</jsonpath>
-            </setBody>
-            <log id="_log2" message="取得金額: ${body}"/>
-        </route>
-    </camelContext>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<bean class="com.redhat.poc.bean.SumAggregationStrategy"
+		id="SumAggregationStrategy" scope="singleton" />
+	<bean class="com.redhat.poc.bean.JsonLineAggregationStrategy"
+		id="JsonLineAggregationStrategy" scope="singleton" />
+	<bean class="com.redhat.poc.bean.ResultAggregationProcess"
+		id="resultAggregationProcess" />
+	<bean class="com.redhat.poc.bean.FormatBean" id="formatBean"
+		scope="singleton" />
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		id="bean-21e1e8a6-d730-45eb-8c5b-fce2f705986a" />
+	<camelContext id="camel"
+		xmlns="http://camel.apache.org/schema/spring">
+		<dataFormats>
+			<xmljson contentTypeHeader="false"
+				forceTopLevelObject="false" id="xml2json" namespaceLenient="false"
+				removeNamespacePrefixes="false" skipNamespaces="false"
+				skipWhitespace="false" trimSpaces="false" />
+			<json allowJmsType="false" allowUnmarshallType="false"
+				contentTypeHeader="false" enableJaxbAnnotationModule="false"
+				id="gson-dataformat" library="XStream" prettyPrint="false"
+				useDefaultObjectMapper="true" useList="false" />
+		</dataFormats>
+		<route id="證券交割檔處理">
+			<from id="讀取交割匯入檔" uri="file:input" />
+			<log id="原始檔案內容" message="BODY: ${body}" />
+			<to id="交割匯入檔解析JSON" uri="txfrmr:com.redhat.firstbank.poc/MapREQ" />
+			<!-- <log id="JSON格式內容" message="BODY: ${body}"/> -->
+			<!-- <setProperty id="JSON格式原始輸入保存" propertyName="TX_INPUT_JSON"> <simple>${body}</simple> 
+				</setProperty> -->
+			<setHeader headerName="TX_INPUT_JSON" id="_setHeader21">
+				<simple>${body}</simple>
+			</setHeader>
+			<!-- 分公司劃撥專戶帳號 -->
+			<setProperty id="取得分公司劃撥專戶帳號"
+				propertyName="SUBSTOCKCOMACCT">
+				<jsonpath>$.ESB028001.Header.SUBSTOCKCOMACCT</jsonpath>
+			</setProperty>
+			<setProperty id="設定扣數一扣" propertyName="TX_COUNT">
+				<constant>1</constant>
+			</setProperty>
+			<to id="執行 1.1.多扣投資人" uri="direct:Usecase1.1" />
+			<setProperty id="儲存扣款結果" propertyName="TX_OUTPUT_1">
+				<simple>${body}</simple>
+			</setProperty>
+			<to id="執行 1.2.一入券商作業" uri="direct:Usecase1.2" />
+			<to id="執行 2.1.券商待轉出加總作業" uri="direct:Usecase2.1" />
+			<setProperty id="取得券商待轉出金額" propertyName="SUBAMT">
+				<simple>${body}</simple>
+			</setProperty>
+			<to id="執行 2.2.券商餘額作業" uri="direct:Usecase2.2" />
+			<setBody id="3.1.取得一扣金額">
+				<simple>${property.SUBAMT}</simple>
+			</setBody>
+			<to id="執行 3.1.一扣券商" uri="direct:Usecase3.1" />
+			<to id="執行 3.2.多入投資人" uri="direct:Usecase3.2" />
+			<setProperty id="儲存入款結果" propertyName="TX_OUTPUT_2">
+				<simple>${body}</simple>
+			</setProperty>
+			<setHeader id="交易子項結果" headerName="TX_OUTPUT">
+				<simple>[${property.TX_OUTPUT_1},${property.TX_OUTPUT_2}]</simple>
+			</setHeader>
+			<log id="_log1" message="[DEBUG] 子項結果 ${header.TX_OUTPUT}" />
+			<setBody id="4.1.取得原始輸入">
+				<simple>${header.TX_INPUT_JSON}</simple>
+			</setBody>
+			<to id="Input to Output as Base" uri="txfrmr:com.redhat.firstbank.poc/MapJsonREQtoJsonRESP"/>
+			<convertBodyTo type="java.lang.String" />
+<!-- 			<log message="[DEBUG] 轉型輸出： ${body}" /> -->
+			<process ref="resultAggregationProcess" />
+			<to id="轉出回覆檔格式" uri="txfrmr:com.redhat.firstbank.poc/MapRESP" />
+			<to id="輸出回覆檔"
+				uri="file:output?fileName=${file:name.noext}_R${property.TX_COUNT}.dat" />
+			<log id="_log11" message="交割匯出檔寫入成功 - 交易完成" />
+
+		</route>
+		<route id="1.1.多扣投資人作業">
+			<from id="多扣投資人作業" uri="direct:Usecase1.1" />
+			<split id="平行處理投資人扣款" strategyRef="JsonLineAggregationStrategy">
+				<jsonpath headerName="TX_INPUT_JSON" writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
+				<!-- <log id="_log5" message="扣： ${body}"/> -->
+				<setProperty id="_setProperty1"
+					propertyName="TX_JSON_BODY">
+					<simple>${body}</simple>
+				</setProperty>
+				<setHeader headerName="ACCTNO" id="_setHeader3">
+					<jsonpath>$.ACCTNO</jsonpath>
+				</setHeader>
+				<setHeader headerName="CUSTID" id="_setHeader4">
+					<jsonpath>$.CUSTID</jsonpath>
+				</setHeader>
+				<setHeader headerName="TXSEQNO" id="_setHeader5">
+					<jsonpath>$.TXSEQNO</jsonpath>
+				</setHeader>
+				<setHeader headerName="TXSUBSEQ" id="_setHeader6">
+					<jsonpath>$.TXSUBSEQ</jsonpath>
+				</setHeader>
+				<setHeader headerName="AMT" id="_setHeader7">
+					<jsonpath>$.AMT</jsonpath>
+				</setHeader>
+				<to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl" />
+				<to id="_to5"
+					uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y_T" />
+				<convertBodyTo id="_convertBodyTo1"
+					type="java.lang.String" />
+				<marshal id="_marshal1" ref="xml2json" />
+				<setHeader headerName="PBBALSIGN" id="_setHeader1">
+					<jsonpath>$.TxRs.PBBalSign1</jsonpath>
+				</setHeader>
+				<setHeader headerName="PBBALAMT" id="_setHeader2">
+					<jsonpath>$.TxRs.PBBalAmt1</jsonpath>
+				</setHeader>
+				<setHeader headerName="TransAcc" id="_setHeader8">
+					<jsonpath>$.TxRs.TransAcc1</jsonpath>
+				</setHeader>
+				<setHeader headerName="AgrAcct" id="_setHeader9">
+					<constant>00000000000</constant>
+				</setHeader>
+				<setHeader headerName="HOSTCODE" id="_setHeader10">
+					<jsonpath>$.Header.StatusCode</jsonpath>
+				</setHeader>
+				<setBody id="_setBody2">
+					<simple>${property.TX_JSON_BODY}</simple>
+				</setBody>
+				<to id="轉換單筆扣款結果"
+					uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody" />
+				<!-- <log message="扣款結果: ${body}"/> -->
+			</split>
+			<!-- <log id="_log1" message="扣款總結: ${body}"/> -->
+		</route>
+		<route id="1.2.一入券商作業">
+			<from id="一入券商作業" uri="direct:Usecase1.2" />
+			<split id="匯總券商存入" strategyRef="SumAggregationStrategy">
+				<jsonpath headerName="TX_INPUT_JSON">$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
+				<to id="取得1497金額" uri="direct:getAmount" />
+			</split>
+			<log id="_log2" message="待入券商總額：${body}" />
+			<to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl" />
+			<to id="呼叫FCB91178Y服務"
+				uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y" />
+		</route>
+		<route id="2.1.券商待轉出加總作業">
+			<from id="券商待轉出加總作業" uri="direct:Usecase2.1" />
+			<split id="匯總券商轉出" strategyRef="SumAggregationStrategy">
+				<jsonpath headerName="TX_INPUT_JSON">$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
+				<to id="取得1797金額" uri="direct:getAmount" />
+			</split>
+			<log id="_log3" message="待扣券商總額：${body}" />
+		</route>
+		<route id="2.2.券商餘額調撥作業">
+			<from id="券商餘額作業" uri="direct:Usecase2.2" />
+			<setBody id="_setBody4">
+				<simple>${header.TX_INPUT_JSON}</simple>
+			</setBody>
+			<to id="呼叫FCB91103G_1服務"
+				uri="http4://{{backend.ip}}:{{backend.port}}/FCB91103G" />
+			<convertBodyTo id="HTTP回應純文字化" type="java.lang.String" />
+			<marshal id="XML to JSON" ref="xml2json" />
+			<setBody id="取得餘額">
+				<jsonpath>$.TxRs.PBBalAmt</jsonpath>
+			</setBody>
+			<setBody id="轉型餘額">
+				<simple>${bodyAs(Float)}</simple>
+			</setBody>
+			<setHeader headerName="amtDifference" id="計算差額">
+				<groovy>exchange.properties.SUBAMT - in.body</groovy>
+			</setHeader>
+			<log id="_log4"
+				message="(投資人 - 券商) balanceAmt： ${header.amtDifference}" />
+			<choice id="判斷餘額是否足夠">
+				<when id="_when1">
+					<simple>${header.amtDifference} &gt;= 0</simple>
+					<log id="_log5" message="沒錢了！" />
+					<to id="FCB91348Y_RQ產生" uri="freemarker:ftl/FCB91348Y_RQ.ftl" />
+					<to id="呼叫FCB91348Y服務"
+						uri="http4://{{backend.ip}}:{{backend.port}}/FCB91348Y" />
+					<log id="_log6" message="RESPONSE Body: ${body}" />
+				</when>
+				<otherwise id="_otherwise1">
+					<log id="_log7" message="餘額充足！" />
+				</otherwise>
+			</choice>
+		</route>
+		<route id="3.1.一扣券商">
+			<from id="一扣券商" uri="direct:Usecase3.1" />
+			<log id="_log8" message="3.1.一扣券商" />
+			<log id="_log9" message="待扣款金額: ${body}" />
+			<to id="FCB91148Y_RQ產生" uri="freemarker:ftl/FCB91148Y_RQ.ftl" />
+			<to id="呼叫FCB91148Y服務"
+				uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y" />
+		</route>
+		<route id="3.2.多入投資人">
+			<from id="多入投資人" uri="direct:Usecase3.2" />
+			<log id="_log10" message="3.2.多入投資人" />
+			<split id="平行處理投資人入款" strategyRef="JsonLineAggregationStrategy">
+				<jsonpath headerName="TX_INPUT_JSON" writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
+				<setProperty id="_setProperty2"
+					propertyName="TX_JSON_BODY">
+					<simple>${body}</simple>
+				</setProperty>
+				<setHeader headerName="ACCTNO" id="_setHeader11">
+					<jsonpath>$.ACCTNO</jsonpath>
+				</setHeader>
+				<setHeader headerName="CUSTID" id="_setHeader12">
+					<jsonpath>$.CUSTID</jsonpath>
+				</setHeader>
+				<setHeader headerName="TXSEQNO" id="_setHeader13">
+					<jsonpath>$.TXSEQNO</jsonpath>
+				</setHeader>
+				<setHeader headerName="TXSUBSEQ" id="_setHeader14">
+					<jsonpath>$.TXSUBSEQ</jsonpath>
+				</setHeader>
+				<setHeader headerName="AMT" id="_setHeader15">
+					<jsonpath>$.AMT</jsonpath>
+				</setHeader>
+				<to id="FCB91178Y_T_RQ產生" uri="freemarker:ftl/FCB91178Y_T_RQ.ftl" />
+				<to id="_to1"
+					uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y_T" />
+				<convertBodyTo id="_convertBodyTo2"
+					type="java.lang.String" />
+				<marshal id="_marshal2" ref="xml2json" />
+				<setHeader headerName="PBBALSIGN" id="_setHeader16">
+					<jsonpath>$.TxRs.PBBalSign</jsonpath>
+				</setHeader>
+				<setHeader headerName="PBBALAMT" id="_setHeader17">
+					<jsonpath>$.TxRs.PBBalAmt</jsonpath>
+				</setHeader>
+				<setHeader headerName="TransAcc" id="_setHeader18">
+					<jsonpath>$.TxRs.TransAcc1</jsonpath>
+				</setHeader>
+				<setHeader headerName="AgrAcct" id="_setHeader19">
+					<jsonpath>$.TxRs.AgrAcct1</jsonpath>
+				</setHeader>
+				<setHeader headerName="HOSTCODE" id="_setHeader20">
+					<jsonpath>$.Header.StatusCode</jsonpath>
+				</setHeader>
+				<setBody id="_setBody3">
+					<simple>${property.TX_JSON_BODY}</simple>
+				</setBody>
+				<to id="轉換單筆入款結果"
+					uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody" />
+			</split>
+			<!-- <log id="_log11" message="入款總結: ${body}"/> -->
+		</route>
+		<route id="通用-取得金額">
+			<from id="_from1" uri="direct:getAmount" />
+			<setBody id="_setBody1">
+				<jsonpath>$.AMT</jsonpath>
+			</setBody>
+			<log id="_log12" message="取得金額: ${body}" />
+		</route>
+	</camelContext>
 </beans>

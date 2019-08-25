@@ -36,9 +36,9 @@
 <WsID2>H3</WsID2>
 <HostSeqNo2>20001</HostSeqNo2>
 <TxID2>178Y</TxID2>
-<PBBalSign>+</PBBalSign>
+<PBBalSign> </PBBalSign>
 <PBBalAmt>00000000000</PBBalAmt>
-<AvlBalSign>+</AvlBalSign>
+<AvlBalSign> </AvlBalSign>
 <AvlBalAmt>00000000000</AvlBalAmt>
 </TxRs>
 </XML>
