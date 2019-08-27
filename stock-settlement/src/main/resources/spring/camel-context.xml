@@ -28,11 +28,7 @@
             <setHeader headerName="TX_INPUT_JSON" id="JSON格式原始輸入保存">
                 <simple>${body}</simple>
             </setHeader>
-            <!-- 分公司劃撥專戶帳號 -->
-            <setProperty id="取得分公司劃撥專戶帳號" propertyName="SUBSTOCKCOMACCT">
-                <jsonpath>$.ESB028001.Header.SUBSTOCKCOMACCT</jsonpath>
-            </setProperty>
-            <setProperty id="設定扣數一扣" propertyName="TX_COUNT">
+            <setProperty id="設定扣數" propertyName="TX_COUNT">
                 <constant>1</constant>
             </setProperty>
             <to id="執行 1.1.多扣投資人" uri="direct:Usecase1.1"/>
@@ -56,60 +52,74 @@
             <setHeader headerName="TX_OUTPUT" id="整合交易子項結果">
                 <simple>[${property.TX_OUTPUT_1},${property.TX_OUTPUT_2}]</simple>
             </setHeader>
-            <setBody id="4.1.取得原始輸入">
-                <simple>${header.TX_INPUT_JSON}</simple>
-            </setBody>
-            <to id="Input to Output as Base" uri="txfrmr:com.redhat.firstbank.poc/MapJsonREQtoJsonRESP"/>
-            <convertBodyTo id="_convertBodyTo3" type="java.lang.String"/>
-            <!-- 			<log message="[DEBUG] 轉型輸出： ${body}" /> -->
-            <process id="_process1" ref="resultAggregationProcess"/>
-            <to id="轉出回覆檔格式" uri="txfrmr:com.redhat.firstbank.poc/MapRESP"/>
+            <choice id="判斷幾扣">
+                <when id="一扣">
+                    <simple>${property.TX_COUNT} == 1</simple>
+                    <log id="_log7" message="一扣輸出"/>
+                    <setBody id="_setBody4">
+                        <simple>${header.TX_INPUT_JSON}</simple>
+                    </setBody>
+                    <to id="Input to Output as Base" uri="txfrmr:com.redhat.firstbank.poc/MapJsonREQtoJsonRESP"/>
+                    <convertBodyTo id="_convertBodyTo3" type="java.lang.String"/>
+                    <!-- <log message="[DEBUG] 轉型輸出： ${body}" /> -->
+                    <process id="_process1" ref="resultAggregationProcess"/>
+                    <to id="轉出回覆檔格式" uri="txfrmr:com.redhat.firstbank.poc/MapRESP"/>
+                </when>
+                <otherwise id="二扣">
+                    <log id="_log8" message="二扣輸出！"/>
+                    <to id="執行 4.1.二扣回沖券商" uri="direct:Usecase4.1"/>
+                </otherwise>
+            </choice>
             <to id="輸出回覆檔" uri="file:output?fileName=${file:name.noext}_R${property.TX_COUNT}.dat"/>
-            <log id="_log11" message="交割匯出檔寫入成功 - 交易完成"/>
+            <log id="交易完成" message="交割匯出檔寫入成功 - 交易完成"/>
         </route>
         <route id="1.1.多扣投資人作業">
             <from id="多扣投資人作業" uri="direct:Usecase1.1"/>
+            <!-- 分公司劃撥專戶帳號 -->
+            <setProperty id="取得分公司劃撥專戶帳號" propertyName="SUBSTOCKCOMACCT">
+                <jsonpath>$.ESB028001.Header.SUBSTOCKCOMACCT</jsonpath>
+            </setProperty>
             <split id="平行處理投資人扣款" strategyRef="JsonLineAggregationStrategy">
                 <jsonpath headerName="TX_INPUT_JSON" writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
                 <!-- <log id="_log5" message="扣： ${body}"/> -->
-                <setProperty id="_setProperty1" propertyName="TX_JSON_BODY">
+                <setProperty id="暫存單筆交易資料" propertyName="TX_JSON_BODY">
                     <simple>${body}</simple>
                 </setProperty>
-                <setHeader headerName="ACCTNO" id="_setHeader3">
+                <setHeader headerName="ACCTNO" id="取得投資人帳號">
                     <jsonpath>$.ACCTNO</jsonpath>
                 </setHeader>
-                <setHeader headerName="CUSTID" id="_setHeader4">
+                <setHeader headerName="CUSTID" id="取得客戶ID">
                     <jsonpath>$.CUSTID</jsonpath>
                 </setHeader>
-                <setHeader headerName="TXSEQNO" id="_setHeader5">
+                <setHeader headerName="TXSEQNO" id="取得交易序號">
                     <jsonpath>$.TXSEQNO</jsonpath>
                 </setHeader>
-                <setHeader headerName="TXSUBSEQ" id="_setHeader6">
+                <setHeader headerName="TXSUBSEQ" id="取得交易子序號">
                     <jsonpath>$.TXSUBSEQ</jsonpath>
                 </setHeader>
-                <setHeader headerName="AMT" id="_setHeader7">
+                <setHeader headerName="AMT" id="取得金額">
                     <jsonpath>$.AMT</jsonpath>
                 </setHeader>
                 <to id="FCB91148Y_T_RQ產生" uri="freemarker:ftl/FCB91148Y_T_RQ.ftl"/>
-                <to id="_to5" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y_T"/>
-                <convertBodyTo id="_convertBodyTo1" type="java.lang.String"/>
-                <marshal id="_marshal1" ref="xml2json"/>
-                <setHeader headerName="PBBALSIGN" id="_setHeader1">
+                <to id="呼叫FCB91148Y_T_RQ" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y_T"/>
+                <convertBodyTo id="回傳格式-字串" type="java.lang.String"/>
+                <marshal id="XML轉JSON格式" ref="xml2json"/>
+                <setHeader headerName="PBBALSIGN" id="取得餘額正負號">
                     <jsonpath>$.TxRs.PBBalSign1</jsonpath>
                 </setHeader>
-                <setHeader headerName="PBBALAMT" id="_setHeader2">
+                <setHeader headerName="PBBALAMT" id="取得交易餘額">
                     <jsonpath>$.TxRs.PBBalAmt1</jsonpath>
                 </setHeader>
-                <setHeader headerName="TransAcc" id="_setHeader8">
+                <setHeader headerName="TransAcc" id="取得轉出帳號">
                     <jsonpath>$.TxRs.TransAcc1</jsonpath>
                 </setHeader>
-                <setHeader headerName="AgrAcct" id="_setHeader9">
+                <setHeader headerName="AgrAcct" id="取得轉入帳號">
                     <constant>00000000000</constant>
                 </setHeader>
-                <setHeader headerName="HOSTCODE" id="_setHeader10">
+                <setHeader headerName="HOSTCODE" id="取得主機回傳">
                     <jsonpath>$.Header.StatusCode</jsonpath>
                 </setHeader>
-                <setBody id="_setBody2">
+                <setBody id="取回單筆交易資料">
                     <simple>${property.TX_JSON_BODY}</simple>
                 </setBody>
                 <to id="轉換單筆扣款結果" uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody"/>
@@ -123,7 +133,7 @@
                 <jsonpath headerName="TX_INPUT_JSON">$.ESB028001.Body[?(@.TRANSID =="1497")]</jsonpath>
                 <to id="取得1497金額" uri="direct:getAmount"/>
             </split>
-            <log id="_log2" message="待入券商總額：${body}"/>
+            <log id="待入券商總額" message="待入券商總額：${body}"/>
             <to id="FCB91178Y_RQ產生" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
             <to id="呼叫FCB91178Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y"/>
         </route>
@@ -133,49 +143,49 @@
                 <jsonpath headerName="TX_INPUT_JSON">$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
                 <to id="取得1797金額" uri="direct:getAmount"/>
             </split>
-            <log id="_log3" message="待扣券商總額：${body}"/>
+            <log id="待扣券商總額" message="待扣券商總額：${body}"/>
         </route>
         <route id="2.2.券商餘額調撥作業">
             <from id="券商餘額作業" uri="direct:Usecase2.2"/>
-            <setBody id="_setBody4">
+            <setBody id="_setBody2">
                 <simple>${header.TX_INPUT_JSON}</simple>
             </setBody>
             <to id="呼叫FCB91103G_1服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91103G"/>
             <convertBodyTo id="HTTP回應純文字化" type="java.lang.String"/>
             <marshal id="XML to JSON" ref="xml2json"/>
-            <setBody id="取得餘額">
+            <setBody id="取得券商餘額">
                 <jsonpath>$.TxRs.PBBalAmt</jsonpath>
             </setBody>
-            <setBody id="轉型餘額">
+            <setBody id="轉型券商餘額">
                 <simple>${bodyAs(Float)}</simple>
             </setBody>
             <setHeader headerName="amtDifference" id="計算差額">
                 <groovy>exchange.properties.SUBAMT - in.body</groovy>
             </setHeader>
-            <log id="_log4" message="(投資人 - 券商) balanceAmt： ${header.amtDifference}"/>
+            <log id="投資人與券商差額" message="(投資人 - 券商) balanceAmt： ${header.amtDifference}"/>
             <choice id="判斷餘額是否足夠">
-                <when id="_when1">
+                <when id="餘額不足">
                     <simple>${header.amtDifference} &gt;= 0</simple>
                     <log id="_log5" message="沒錢了！"/>
                     <to id="FCB91348Y_RQ產生" uri="freemarker:ftl/FCB91348Y_RQ.ftl"/>
                     <to id="呼叫FCB91348Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91348Y"/>
                     <log id="_log6" message="RESPONSE Body: ${body}"/>
                 </when>
-                <otherwise id="_otherwise1">
-                    <log id="_log7" message="餘額充足！"/>
+                <otherwise id="餘額足夠">
+                    <log id="_log1" message="餘額充足！"/>
                 </otherwise>
             </choice>
         </route>
         <route id="3.1.一扣券商">
             <from id="一扣券商" uri="direct:Usecase3.1"/>
-            <log id="_log8" message="3.1.一扣券商"/>
-            <log id="_log9" message="待扣款金額: ${body}"/>
+            <log message="3.1.一扣券商"/>
+            <log message="待扣款金額: ${body}"/>
             <to id="FCB91148Y_RQ產生" uri="freemarker:ftl/FCB91148Y_RQ.ftl"/>
             <to id="呼叫FCB91148Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y"/>
         </route>
         <route id="3.2.多入投資人">
             <from id="多入投資人" uri="direct:Usecase3.2"/>
-            <log id="_log10" message="3.2.多入投資人"/>
+            <log id="_log4" message="3.2.多入投資人"/>
             <split id="平行處理投資人入款" strategyRef="JsonLineAggregationStrategy">
                 <jsonpath headerName="TX_INPUT_JSON" writeAsString="true">$.ESB028001.Body[?(@.TRANSID =="1797")]</jsonpath>
                 <setProperty id="_setProperty2" propertyName="TX_JSON_BODY">
@@ -221,6 +231,13 @@
                 <to id="轉換單筆入款結果" uri="txfrmr:com.redhat.firstbank.poc/MapJsonBody"/>
             </split>
             <!-- <log id="_log11" message="入款總結: ${body}"/> -->
+        </route>
+        <route id="4.1.二扣回沖券商">
+            <from id="二扣回沖券商" uri="direct:Usecase4.1"/>
+            <log message="4.1.二扣回沖券商"/>
+            <log message="待扣款金額: ${body}"/>
+            <to id="FCB91178Y_RQ產生for二扣" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
+            <to id="呼叫FCB91178Y服務for二扣" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y"/>
         </route>
         <route id="通用-取得金額">
             <from id="_from1" uri="direct:getAmount"/>
