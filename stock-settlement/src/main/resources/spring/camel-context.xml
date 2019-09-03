@@ -178,8 +178,8 @@
         </route>
         <route id="3.1.一扣券商">
             <from id="一扣券商" uri="direct:Usecase3.1"/>
-            <log message="3.1.一扣券商"/>
-            <log message="待扣款金額: ${body}"/>
+            <log id="_log2" message="3.1.一扣券商"/>
+            <log id="_log3" message="待扣款金額: ${body}"/>
             <to id="FCB91148Y_RQ產生" uri="freemarker:ftl/FCB91148Y_RQ.ftl"/>
             <to id="呼叫FCB91148Y服務" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91148Y"/>
         </route>
@@ -234,8 +234,8 @@
         </route>
         <route id="4.1.二扣回沖券商">
             <from id="二扣回沖券商" uri="direct:Usecase4.1"/>
-            <log message="4.1.二扣回沖券商"/>
-            <log message="待扣款金額: ${body}"/>
+            <log id="_log9" message="4.1.二扣回沖券商"/>
+            <log id="_log10" message="待扣款金額: ${body}"/>
             <to id="FCB91178Y_RQ產生for二扣" uri="freemarker:ftl/FCB91178Y_RQ.ftl"/>
             <to id="呼叫FCB91178Y服務for二扣" uri="http4://{{backend.ip}}:{{backend.port}}/FCB91178Y"/>
         </route>
